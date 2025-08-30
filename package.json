@@ -1,12 +1,15 @@
 {
   "name": "yt-music-api",
   "version": "1.0.0",
-  "description": "Vercel API to fetch direct YouTube audio/video links using youtubei.js",
+  "description": "Node.js API to fetch direct YouTube audio/video URLs using youtubei.js",
+  "main": "api/info.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node api/info.js"
   },
   "dependencies": {
-    "youtubei.js": "^15.0.1"
+    "youtubei.js": "^15.0.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
   }
 }
