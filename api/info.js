@@ -5,8 +5,6 @@ import cors from "cors";
 const app = express();
 app.use(cors()); // allow all origins
 
-let ytPromise = Innertube.create(); // initialize once
-
 // API: /info?id=VIDEO_ID or /info?url=FULL_YOUTUBE_URL
 app.get("/", async (req, res) => {
   try {
@@ -21,7 +19,8 @@ app.get("/", async (req, res) => {
       else return res.status(400).json({ error: "Invalid YouTube URL" });
     }
 
-    const yt = await ytPromise;
+    // Initialize Innertube on each request
+    const yt = await Innertube.create();
     const info = await yt.getInfo(id);
 
     const formats = info.streaming_data.adaptive_formats.map(f => ({
