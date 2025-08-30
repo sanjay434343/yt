@@ -5,7 +5,8 @@
   "main": "api/info.js",
   "type": "module",
   "scripts": {
-    "start": "node api/info.js"
+    "start": "node api/info.js",  // Start the Express server
+    "dev": "nodemon api/info.js"  // Use nodemon for local development
   },
   "dependencies": {
     "youtubei.js": "^15.0.1",
