@@ -1,31 +1,38 @@
+import express from "express";
 import { Innertube } from "youtubei.js";
+import cors from "cors";
+
+const app = express();
+app.use(cors()); // allow all origins
 
 let ytPromise = Innertube.create(); // initialize once
 
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") return res.status(200).end();
-
+// API: /info?id=VIDEO_ID or /info?url=FULL_YOUTUBE_URL
+app.get("/", async (req, res) => {
   try {
-    const { id } = req.query;
-    if (!id) return res.status(400).json({ error: "Missing video ID (?id=)" });
+    let { id, url } = req.query;
 
-    const yt = await ytPromise; // await the initialized client
+    if (!id && !url) return res.status(400).json({ error: "Provide ?id=VIDEO_ID or ?url=FULL_YOUTUBE_URL" });
+
+    // Extract video ID if URL is provided
+    if (url && !id) {
+      const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})/);
+      if (match) id = match[1];
+      else return res.status(400).json({ error: "Invalid YouTube URL" });
+    }
+
+    const yt = await ytPromise;
     const info = await yt.getInfo(id);
 
     const formats = info.streaming_data.adaptive_formats.map(f => ({
       itag: f.itag,
       mimeType: f.mime_type,
-      bitrate: f.bitrate,
       quality: f.quality_label || null,
       audioQuality: f.audio_quality || null,
       url: f.deciphered_url || f.url || null
     }));
 
-    res.status(200).json({
+    res.json({
       success: true,
       video_id: id,
       title: info.basic_info.title,
@@ -35,7 +42,10 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error("Innertube fetch error:", err.message);
+    console.error("Innertube error:", err.message);
     res.status(500).json({ error: "Failed to fetch video info" });
   }
-}
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
